@@ -1,0 +1,5 @@
+{
+  "globalDependencies": {
+    "molar": "file:./node_modules/molar/typings/molar.d.ts"
+  }
+}
