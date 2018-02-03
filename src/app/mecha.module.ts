@@ -11,6 +11,11 @@ const defaultConfig: AppConfigInterface = {
   cacheTtl: 5000,
 };
 
+export interface MechaModuleOptionsInterface {
+  appConfig: AppConfigInterface;
+  cacheClass: new (...args: any[]) => CacheInterface;
+}
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -21,12 +26,15 @@ const defaultConfig: AppConfigInterface = {
   ],
 })
 export class MechaModule {
-  static forRoot(appConfig: AppConfigInterface = defaultConfig): ModuleWithProviders {
+  static forRoot({
+      appConfig = defaultConfig,
+      cacheClass = MechaCacheService,
+    }: MechaModuleOptionsInterface): ModuleWithProviders {
     return {
       ngModule: MechaModule,
       providers: [
         { provide: APP_CONFIG, useValue: appConfig },
-        { provide: CACHE, useClass: MechaCacheService },
+        { provide: CACHE, useClass: cacheClass },
       ]
     };
   }
