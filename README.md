@@ -13,4 +13,4 @@ Currently supports the following features related to the `Http` service:
 7. Extracting JSON from responses before notifying subscribers
 8. Consistent error handling
 
-See it in action at [linty.io](http://linty.io/).
+If that sounds boring then maybe it will help to see it in action at [linty.io](http://linty.io/).
