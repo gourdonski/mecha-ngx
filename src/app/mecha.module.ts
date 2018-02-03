@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 
 import { APP_CONFIG, AppConfigInterface } from './abstract/app-config.abstract';
 import { CACHE, CacheInterface } from './abstract/cache.abstract';
@@ -14,7 +14,7 @@ const defaultConfig: AppConfigInterface = {
 @NgModule({
   imports: [
     BrowserModule,
-    HttpModule,
+    HttpClientModule,
   ],
   providers: [
     MechaHttpService,

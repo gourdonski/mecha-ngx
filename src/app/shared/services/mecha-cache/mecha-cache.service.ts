@@ -7,6 +7,7 @@ import { CacheInterface } from '../../../abstract/cache.abstract';
 
 @Injectable()
 export class MechaCacheService implements CacheInterface {
+  // using a simple caching library that checks for expiration on retrieval
   private _cache: molar.ILookup;
 
   constructor(@Inject(APP_CONFIG) readonly appConfig: AppConfigInterface) {

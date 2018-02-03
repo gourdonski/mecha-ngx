@@ -6,7 +6,7 @@ export class MechaUtilService {
   /**
    * Converts a string to a hash code
    * @param {string} val Value to be hashed
-   * 
+   *
    * @returns {number} Hash code generated from input value
   */
   public getHashCode(val: any): number {
@@ -21,11 +21,13 @@ export class MechaUtilService {
     if (val.length === 0) {
       return hash;
     }
-        
+
     for (let i = 0; i < val.length; i++) {
         chr   = val.charCodeAt(i);
+        // tslint:disable-next-line:no-bitwise
         hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; //Convert to 32-bit integer.
+        // tslint:disable-next-line:no-bitwise
+        hash |= 0; // convert to 32-bit integer
     }
 
     return hash;
