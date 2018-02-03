@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 
-export interface Cache {
+export interface CacheInterface {
     add(key: any, value: any): void | boolean;
     remove(key: any): void | boolean;
     find(key: any): any;
@@ -8,4 +8,4 @@ export interface Cache {
     dump(): void;
 }
 
-export const CACHE = new InjectionToken<Cache>('cache');
+export const CACHE = new InjectionToken<CacheInterface>('cache');
