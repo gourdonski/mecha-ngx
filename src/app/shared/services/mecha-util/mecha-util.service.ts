@@ -23,13 +23,13 @@ export class MechaUtilService {
     }
 
     for (let i = 0; i < val.length; i++) {
-        chr   = val.charCodeAt(i);
-        // tslint:disable-next-line:no-bitwise
-        hash  = ((hash << 5) - hash) + chr;
-        // tslint:disable-next-line:no-bitwise
-        hash |= 0; // convert to 32-bit integer
+      chr = val.charCodeAt(i);
+      // tslint:disable-next-line:no-bitwise
+      hash = ((hash << 5) - hash) + chr;
+      // tslint:disable-next-line:no-bitwise
+      hash |= 0; // convert to 32-bit integer
     }
 
     return hash;
-}
+  }
 }
