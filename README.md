@@ -1,6 +1,6 @@
 # MechaAngular
 
-Working on an `ng+` library to make developing apps even easier.  
+Working on an Angular 2+ library to make developing apps even easier.  
 
 Currently supports the following features related to the `Http` service:
 
