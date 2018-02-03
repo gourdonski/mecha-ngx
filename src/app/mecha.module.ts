@@ -8,7 +8,7 @@ import { MechaHttpService } from './http/services/mecha-http/mecha-http.service'
 import { MechaCacheService } from './shared/services/mecha-cache/mecha-cache.service';
 
 const defaultConfig: AppConfigInterface = {
-  cacheTtl: 5000,
+  cacheTtl: 60000,
 };
 
 export interface MechaModuleOptionsInterface {
