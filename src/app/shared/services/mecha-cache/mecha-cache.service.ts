@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@angular/core';
 
 import * as molar from 'molar';
 
-import { APP_CONFIG, AppConfigInterface } from '../../abstract/app-config.abstract';
-import { CacheInterface } from '../../abstract/cache.abstract';
+import { APP_CONFIG, AppConfigInterface } from '../../../abstract/app-config.abstract';
+import { CacheInterface } from '../../../abstract/cache.abstract';
 
 @Injectable()
 export class MechaCacheService implements CacheInterface {
