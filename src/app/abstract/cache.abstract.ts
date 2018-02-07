@@ -8,4 +8,4 @@ export interface CacheInterface {
     dump(): void;
 }
 
-export const CACHE = new InjectionToken<CacheInterface>('cache');
+export const CACHE: InjectionToken<CacheInterface> = new InjectionToken<CacheInterface>('mechaCache');
