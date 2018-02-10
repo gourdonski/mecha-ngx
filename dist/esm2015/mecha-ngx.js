@@ -183,7 +183,6 @@ class MechaHttpService {
         this._util = _util;
         this._requestLookup = {};
         this._requesterHistory = {};
-        this._isDebouncingRequest = false;
     }
     /**
      * Vanilla get request
@@ -226,28 +225,21 @@ class MechaHttpService {
      * Thwart spammers with a debounced get
      * @template T
      * @param {?} url URL to get resource from
+     * @param {?} requestSource Source subject for making requests
      * @param {?=} debounceInMilliseconds
      * @return {?} The debounced response as an observable
      */
-    getDebounced(url, debounceInMilliseconds = 1000) {
+    getDebounced(url, requestSource, debounceInMilliseconds = 1000) {
         const /** @type {?} */ requester = 'getDebounced';
-        if (!this._isDebouncingRequest) {
-            this._debouncedSource = new AsyncSubject();
-            // not using switchMap because we don't want to hit backend at all until debounce completes
-            this._http.get(url)
-                .takeUntil(this._debouncedSource)
-                .debounceTime(debounceInMilliseconds)
-                .catch(this.handleResponseError)
-                .map((response) => new MechaHttpResponse({
-                requester: requester,
-                requestNumber: this.getRequestNumber(requester),
-                data: this.getResponseJson(response),
-            }))
-                .finally(() => this._isDebouncingRequest = false)
-                .subscribe(this._debouncedSource);
-        }
-        this._isDebouncingRequest = true;
-        return this._debouncedSource;
+        return requestSource
+            .debounceTime(debounceInMilliseconds)
+            .switchMap(() => this._http.get(url))
+            .catch(this.handleResponseError)
+            .map((response) => new MechaHttpResponse({
+            requester: requester,
+            requestNumber: this.getRequestNumber(requester),
+            data: this.getResponseJson(response),
+        }));
     }
     /**
      * Get responses until a condition is met, just because

@@ -22,8 +22,6 @@ export declare class MechaHttpService {
     private readonly _util;
     private _requestLookup;
     private _requesterHistory;
-    private _isDebouncingRequest;
-    private _debouncedSource;
     private _cachedSource;
     private _cachedImmutableSource;
     constructor(_appConfig: AppConfigInterface, _cache: CacheInterface, _http: HttpClient, _util: MechaUtilService);
@@ -44,11 +42,12 @@ export declare class MechaHttpService {
     /**
      * Thwart spammers with a debounced get
      * @param url URL to get resource from
+     * @param requestSource Source subject for making requests
      * @param [debounceInMilliseconds=1000] Length of time to debounce before submitting request
      *
      * @returns The debounced response as an observable
     */
-    getDebounced<T>(url: string, debounceInMilliseconds?: number): Observable<MechaHttpResponseInterface<T>>;
+    getDebounced<T>(url: string, requestSource: Subject<any>, debounceInMilliseconds?: number): Observable<MechaHttpResponseInterface<T>>;
     /**
       * Get responses until a condition is met, just because
       * @param url URL to get resource from
