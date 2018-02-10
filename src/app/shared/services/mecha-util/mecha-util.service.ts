@@ -5,9 +5,9 @@ export class MechaUtilService {
   // http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
   /**
    * Converts a string to a hash code
-   * @param {string} val Value to be hashed
+   * @param val Value to be hashed
    *
-   * @returns {number} Hash code generated from input value
+   * @returns Hash code generated from input value
   */
   public getHashCode(val: any): number {
     if (!(typeof val === 'string' || val instanceof String)) {
