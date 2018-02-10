@@ -1,4 +1,5 @@
-import { InjectionToken, Injectable, Inject, NgModule } from '@angular/core';
+import { InjectionToken, Inject, Injectable, NgModule } from '@angular/core';
+import { Lookup } from 'molar';
 import { HttpClient, HttpResponse, HttpClientModule } from '@angular/common/http';
 import { fromJS } from 'immutable';
 import { AsyncSubject } from 'rxjs/AsyncSubject';
@@ -13,7 +14,6 @@ import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/takeUntil';
-import { Lookup } from 'molar';
 import { BrowserModule } from '@angular/platform-browser';
 
 /**
@@ -35,6 +35,79 @@ const APP_CONFIG = new InjectionToken('mechaAppConfig');
  */
 
 const CACHE = new InjectionToken('mechaCache');
+
+/**
+ * @fileoverview added by tsickle
+ * @suppress {checkTypes} checked by tsc
+ */
+class MechaCacheService {
+    /**
+     * @param {?} _appConfig
+     */
+    constructor(_appConfig) {
+        this._appConfig = _appConfig;
+        this._cache = new Lookup(false, _appConfig.cacheTtl);
+    }
+    /**
+     * Adds a resource to the cache using a key
+     * @param {?} key Key provided to identify the resource in the cache
+     * @param {?} value Value for the resource in the cache
+     *
+     * @return {?} Flag indicating if resource was successfully added
+     */
+    add(key, value) {
+        return this._cache.add(key, value);
+    }
+    /**
+     * Removes a resource from the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} Flag indicating if removal was successful
+     */
+    remove(key) {
+        return this._cache.remove(key) > 0;
+    }
+    /**
+     * Finds a resource in the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} The matching resource, if one exists
+     */
+    find(key) {
+        return this._cache.find(key)[0];
+    }
+    /**
+     * Checks if a resource exists in the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} Flag indicating if resource exists in the cache
+     */
+    contains(key) {
+        return this._cache.contains(key);
+    }
+    /**
+     * Remove all resources from the cache
+     * @return {?}
+     */
+    dump() {
+        this._cache.clear();
+    }
+    /**
+     * Get time to live in milliseconds for resources in cache
+     *
+     * @return {?} Time to live in milliseconds
+     */
+    getCacheTtl() {
+        return this._appConfig.cacheTtl;
+    }
+}
+MechaCacheService.decorators = [
+    { type: Injectable },
+];
+/** @nocollapse */
+MechaCacheService.ctorParameters = () => [
+    { type: undefined, decorators: [{ type: Inject, args: [APP_CONFIG,] },] },
+];
 
 /**
  * @fileoverview added by tsickle
@@ -332,79 +405,6 @@ MechaHttpService.ctorParameters = () => [
  * @fileoverview added by tsickle
  * @suppress {checkTypes} checked by tsc
  */
-class MechaCacheService {
-    /**
-     * @param {?} _appConfig
-     */
-    constructor(_appConfig) {
-        this._appConfig = _appConfig;
-        this._cache = new Lookup(false, _appConfig.cacheTtl);
-    }
-    /**
-     * Adds a resource to the cache using a key
-     * @param {?} key Key provided to identify the resource in the cache
-     * @param {?} value Value for the resource in the cache
-     *
-     * @return {?} Flag indicating if resource was successfully added
-     */
-    add(key, value) {
-        return this._cache.add(key, value);
-    }
-    /**
-     * Removes a resource from the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} Flag indicating if removal was successful
-     */
-    remove(key) {
-        return this._cache.remove(key) > 0;
-    }
-    /**
-     * Finds a resource in the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} The matching resource, if one exists
-     */
-    find(key) {
-        return this._cache.find(key)[0];
-    }
-    /**
-     * Checks if a resource exists in the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} Flag indicating if resource exists in the cache
-     */
-    contains(key) {
-        return this._cache.contains(key);
-    }
-    /**
-     * Remove all resources from the cache
-     * @return {?}
-     */
-    dump() {
-        this._cache.clear();
-    }
-    /**
-     * Get time to live in milliseconds for resources in cache
-     *
-     * @return {?} Time to live in milliseconds
-     */
-    getCacheTtl() {
-        return this._appConfig.cacheTtl;
-    }
-}
-MechaCacheService.decorators = [
-    { type: Injectable },
-];
-/** @nocollapse */
-MechaCacheService.ctorParameters = () => [
-    { type: undefined, decorators: [{ type: Inject, args: [APP_CONFIG,] },] },
-];
-
-/**
- * @fileoverview added by tsickle
- * @suppress {checkTypes} checked by tsc
- */
 const defaultConfig = {
     cacheTtl: 60000,
 };
@@ -435,6 +435,7 @@ MechaModule.decorators = [
                 ],
                 providers: [
                     MechaHttpService,
+                    MechaUtilService,
                 ],
             },] },
 ];

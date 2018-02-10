@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('@angular/common/http'), require('immutable'), require('rxjs/AsyncSubject'), require('rxjs/Observable'), require('rxjs/add/observable/interval'), require('rxjs/add/observable/throw'), require('rxjs/add/operator/catch'), require('rxjs/add/operator/debounceTime'), require('rxjs/add/operator/finally'), require('rxjs/add/operator/map'), require('rxjs/add/operator/share'), require('rxjs/add/operator/switchMap'), require('rxjs/add/operator/take'), require('rxjs/add/operator/takeUntil'), require('molar'), require('@angular/platform-browser')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', '@angular/common/http', 'immutable', 'rxjs/AsyncSubject', 'rxjs/Observable', 'rxjs/add/observable/interval', 'rxjs/add/observable/throw', 'rxjs/add/operator/catch', 'rxjs/add/operator/debounceTime', 'rxjs/add/operator/finally', 'rxjs/add/operator/map', 'rxjs/add/operator/share', 'rxjs/add/operator/switchMap', 'rxjs/add/operator/take', 'rxjs/add/operator/takeUntil', 'molar', '@angular/platform-browser'], factory) :
-	(factory((global['mecha-ngx'] = {}),global.ng.core,global.ng.common.http,global.immutable,global.Rx,global.Rx,global.Rx.Observable,global.Rx.Observable,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.molar,global.ng.platformBrowser));
-}(this, (function (exports,core,http,immutable,AsyncSubject,Observable,interval,_throw,_catch,debounceTime,_finally,map,share,switchMap,take,takeUntil,molar,platformBrowser) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('molar'), require('@angular/common/http'), require('immutable'), require('rxjs/AsyncSubject'), require('rxjs/Observable'), require('rxjs/add/observable/interval'), require('rxjs/add/observable/throw'), require('rxjs/add/operator/catch'), require('rxjs/add/operator/debounceTime'), require('rxjs/add/operator/finally'), require('rxjs/add/operator/map'), require('rxjs/add/operator/share'), require('rxjs/add/operator/switchMap'), require('rxjs/add/operator/take'), require('rxjs/add/operator/takeUntil'), require('@angular/platform-browser')) :
+	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'molar', '@angular/common/http', 'immutable', 'rxjs/AsyncSubject', 'rxjs/Observable', 'rxjs/add/observable/interval', 'rxjs/add/observable/throw', 'rxjs/add/operator/catch', 'rxjs/add/operator/debounceTime', 'rxjs/add/operator/finally', 'rxjs/add/operator/map', 'rxjs/add/operator/share', 'rxjs/add/operator/switchMap', 'rxjs/add/operator/take', 'rxjs/add/operator/takeUntil', '@angular/platform-browser'], factory) :
+	(factory((global['mecha-ngx'] = {}),global.ng.core,global.molar,global.ng.common.http,global.immutable,global.Rx,global.Rx,global.Rx.Observable,global.Rx.Observable,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.Rx.Observable.prototype,global.ng.platformBrowser));
+}(this, (function (exports,core,molar,http,immutable,AsyncSubject,Observable,interval,_throw,_catch,debounceTime,_finally,map,share,switchMap,take,takeUntil,platformBrowser) { 'use strict';
 
 /**
  * @fileoverview added by tsickle
@@ -20,6 +20,79 @@ var APP_CONFIG = new core.InjectionToken('mechaAppConfig');
  * @record
  */
 var CACHE = new core.InjectionToken('mechaCache');
+/**
+ * @fileoverview added by tsickle
+ * @suppress {checkTypes} checked by tsc
+ */
+var MechaCacheService = /** @class */ (function () {
+    /**
+     * @param {?} _appConfig
+     */
+    function MechaCacheService(_appConfig) {
+        this._appConfig = _appConfig;
+        this._cache = new molar.Lookup(false, _appConfig.cacheTtl);
+    }
+    /**
+     * Adds a resource to the cache using a key
+     * @param {?} key Key provided to identify the resource in the cache
+     * @param {?} value Value for the resource in the cache
+     *
+     * @return {?} Flag indicating if resource was successfully added
+     */
+    MechaCacheService.prototype.add = function (key, value) {
+        return this._cache.add(key, value);
+    };
+    /**
+     * Removes a resource from the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} Flag indicating if removal was successful
+     */
+    MechaCacheService.prototype.remove = function (key) {
+        return this._cache.remove(key) > 0;
+    };
+    /**
+     * Finds a resource in the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} The matching resource, if one exists
+     */
+    MechaCacheService.prototype.find = function (key) {
+        return this._cache.find(key)[0];
+    };
+    /**
+     * Checks if a resource exists in the cache by key
+     * @param {?} key Key provided to identify the resource in the cache
+     *
+     * @return {?} Flag indicating if resource exists in the cache
+     */
+    MechaCacheService.prototype.contains = function (key) {
+        return this._cache.contains(key);
+    };
+    /**
+     * Remove all resources from the cache
+     * @return {?}
+     */
+    MechaCacheService.prototype.dump = function () {
+        this._cache.clear();
+    };
+    /**
+     * Get time to live in milliseconds for resources in cache
+     *
+     * @return {?} Time to live in milliseconds
+     */
+    MechaCacheService.prototype.getCacheTtl = function () {
+        return this._appConfig.cacheTtl;
+    };
+    return MechaCacheService;
+}());
+MechaCacheService.decorators = [
+    { type: core.Injectable },
+];
+/** @nocollapse */
+MechaCacheService.ctorParameters = function () { return [
+    { type: undefined, decorators: [{ type: core.Inject, args: [APP_CONFIG,] },] },
+]; };
 /**
  * @fileoverview added by tsickle
  * @suppress {checkTypes} checked by tsc
@@ -328,79 +401,6 @@ MechaHttpService.ctorParameters = function () { return [
  * @fileoverview added by tsickle
  * @suppress {checkTypes} checked by tsc
  */
-var MechaCacheService = /** @class */ (function () {
-    /**
-     * @param {?} _appConfig
-     */
-    function MechaCacheService(_appConfig) {
-        this._appConfig = _appConfig;
-        this._cache = new molar.Lookup(false, _appConfig.cacheTtl);
-    }
-    /**
-     * Adds a resource to the cache using a key
-     * @param {?} key Key provided to identify the resource in the cache
-     * @param {?} value Value for the resource in the cache
-     *
-     * @return {?} Flag indicating if resource was successfully added
-     */
-    MechaCacheService.prototype.add = function (key, value) {
-        return this._cache.add(key, value);
-    };
-    /**
-     * Removes a resource from the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} Flag indicating if removal was successful
-     */
-    MechaCacheService.prototype.remove = function (key) {
-        return this._cache.remove(key) > 0;
-    };
-    /**
-     * Finds a resource in the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} The matching resource, if one exists
-     */
-    MechaCacheService.prototype.find = function (key) {
-        return this._cache.find(key)[0];
-    };
-    /**
-     * Checks if a resource exists in the cache by key
-     * @param {?} key Key provided to identify the resource in the cache
-     *
-     * @return {?} Flag indicating if resource exists in the cache
-     */
-    MechaCacheService.prototype.contains = function (key) {
-        return this._cache.contains(key);
-    };
-    /**
-     * Remove all resources from the cache
-     * @return {?}
-     */
-    MechaCacheService.prototype.dump = function () {
-        this._cache.clear();
-    };
-    /**
-     * Get time to live in milliseconds for resources in cache
-     *
-     * @return {?} Time to live in milliseconds
-     */
-    MechaCacheService.prototype.getCacheTtl = function () {
-        return this._appConfig.cacheTtl;
-    };
-    return MechaCacheService;
-}());
-MechaCacheService.decorators = [
-    { type: core.Injectable },
-];
-/** @nocollapse */
-MechaCacheService.ctorParameters = function () { return [
-    { type: undefined, decorators: [{ type: core.Inject, args: [APP_CONFIG,] },] },
-]; };
-/**
- * @fileoverview added by tsickle
- * @suppress {checkTypes} checked by tsc
- */
 var defaultConfig = {
     cacheTtl: 60000,
 };
@@ -434,6 +434,7 @@ MechaModule.decorators = [
                 ],
                 providers: [
                     MechaHttpService,
+                    MechaUtilService,
                 ],
             },] },
 ];
