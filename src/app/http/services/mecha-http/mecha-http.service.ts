@@ -32,10 +32,6 @@ export class MechaHttpService {
 
   private _requesterHistory: { [key: string]: RequestNumberInterface } = {};
 
-  private _isDebouncingRequest = false;
-
-  private _debouncedSource: AsyncSubject<MechaHttpResponseInterface<any>>;
-
   private _cachedSource: AsyncSubject<MechaHttpResponseInterface<any>>;
 
   private _cachedImmutableSource: AsyncSubject<MechaHttpResponseInterface<any>>;
@@ -88,33 +84,24 @@ export class MechaHttpService {
   /**
    * Thwart spammers with a debounced get
    * @param url URL to get resource from
+   * @param requestSource Source subject for making requests
    * @param [debounceInMilliseconds=1000] Length of time to debounce before submitting request
    *
    * @returns The debounced response as an observable
   */
-  public getDebounced<T>(url: string, debounceInMilliseconds: number = 1000): Observable<MechaHttpResponseInterface<T>> {
+  public getDebounced<T>(url: string, requestSource: Subject<any>, debounceInMilliseconds: number = 1000):
+    Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getDebounced';
 
-    if (!this._isDebouncingRequest) {
-      this._debouncedSource = new AsyncSubject();
-
-      // not using switchMap because we don't want to hit backend at all until debounce completes
-      this._http.get(url)
-        .takeUntil(this._debouncedSource)
-        .debounceTime(debounceInMilliseconds)
-        .catch(this.handleResponseError)
+    return requestSource
+      .debounceTime(debounceInMilliseconds)
+      .switchMap(() => this._http.get(url))
+      .catch(this.handleResponseError)
         .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
           requester: requester,
           requestNumber: this.getRequestNumber(requester),
           data: this.getResponseJson<T>(response),
-        }))
-        .finally(() => this._isDebouncingRequest = false)
-        .subscribe(this._debouncedSource);
-    }
-
-    this._isDebouncingRequest = true;
-
-    return this._debouncedSource;
+        }));
   }
 
  /**

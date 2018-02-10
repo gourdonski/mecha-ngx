@@ -181,7 +181,6 @@ var MechaHttpService = /** @class */ (function () {
         this._util = _util;
         this._requestLookup = {};
         this._requesterHistory = {};
-        this._isDebouncingRequest = false;
     }
     /**
      * Vanilla get request
@@ -226,30 +225,23 @@ var MechaHttpService = /** @class */ (function () {
      * Thwart spammers with a debounced get
      * @template T
      * @param {?} url URL to get resource from
+     * @param {?} requestSource Source subject for making requests
      * @param {?=} debounceInMilliseconds
      * @return {?} The debounced response as an observable
      */
-    MechaHttpService.prototype.getDebounced = function (url, debounceInMilliseconds) {
+    MechaHttpService.prototype.getDebounced = function (url, requestSource, debounceInMilliseconds) {
         var _this = this;
         if (debounceInMilliseconds === void 0) { debounceInMilliseconds = 1000; }
         var /** @type {?} */ requester = 'getDebounced';
-        if (!this._isDebouncingRequest) {
-            this._debouncedSource = new AsyncSubject();
-            // not using switchMap because we don't want to hit backend at all until debounce completes
-            this._http.get(url)
-                .takeUntil(this._debouncedSource)
-                .debounceTime(debounceInMilliseconds)
-                .catch(this.handleResponseError)
-                .map(function (response) { return new MechaHttpResponse({
-                requester: requester,
-                requestNumber: _this.getRequestNumber(requester),
-                data: _this.getResponseJson(response),
-            }); })
-                .finally(function () { return _this._isDebouncingRequest = false; })
-                .subscribe(this._debouncedSource);
-        }
-        this._isDebouncingRequest = true;
-        return this._debouncedSource;
+        return requestSource
+            .debounceTime(debounceInMilliseconds)
+            .switchMap(function () { return _this._http.get(url); })
+            .catch(this.handleResponseError)
+            .map(function (response) { return new MechaHttpResponse({
+            requester: requester,
+            requestNumber: _this.getRequestNumber(requester),
+            data: _this.getResponseJson(response),
+        }); });
     };
     /**
      * Get responses until a condition is met, just because
