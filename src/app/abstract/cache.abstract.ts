@@ -6,6 +6,7 @@ export interface CacheInterface {
     find(key: any): any;
     contains(key: any): boolean;
     dump(): void;
+    getCacheTtl(): number;
 }
 
 export const CACHE: InjectionToken<CacheInterface> = new InjectionToken<CacheInterface>('mechaCache');

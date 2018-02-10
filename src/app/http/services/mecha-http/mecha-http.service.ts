@@ -4,11 +4,13 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import * as Immutable from 'immutable';
 import { AsyncSubject } from 'rxjs/AsyncSubject';
 import { Observable } from 'rxjs/Observable';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/observable/interval';
 import 'rxjs/add/observable/throw';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/finally';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/switchMap';
@@ -26,11 +28,13 @@ const ARBITRARY_TOKEN_VALUE = ' ';
 
 @Injectable()
 export class MechaHttpService {
+  private _requestLookup: { [key: string]: Subject<any>} = {};
+
   private _requesterHistory: { [key: string]: RequestNumberInterface } = {};
 
   private _isDebouncingRequest = false;
 
-  private _debouncedResponseSource: AsyncSubject<MechaHttpResponseInterface<any>>;
+  private _debouncedSource: AsyncSubject<MechaHttpResponseInterface<any>>;
 
   private _cachedSource: AsyncSubject<MechaHttpResponseInterface<any>>;
 
@@ -62,6 +66,26 @@ export class MechaHttpService {
   }
 
   /**
+   * Share a single request amongst subscribers
+   * @param {string} url URL to get resource from
+   *
+   * @returns {Observable<MechaHttpResponseInterface<T>>} The shared response as an observable
+  */
+  public getShared<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
+    const requester = 'getShared';
+
+    return this._http
+      .get(url)
+      .catch(this.handleResponseError)
+      .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
+        requester: requester,
+        requestNumber: this.getRequestNumber(requester),
+        data: this.getResponseJson<T>(response),
+      }))
+      .share();
+  }
+
+  /**
    * Thwart spammers with a debounced get
    * @param {string} url URL to get resource from
    * @param {number} [debounceInMilliseconds=1000] Length of time to debounce before submitting request
@@ -72,10 +96,11 @@ export class MechaHttpService {
     const requester = 'getDebounced';
 
     if (!this._isDebouncingRequest) {
-      this._debouncedResponseSource = new AsyncSubject<MechaHttpResponseInterface<any>>();
+      this._debouncedSource = new AsyncSubject();
 
+      // not using switchMap because we don't want to hit backend at all until debounce completes
       this._http.get(url)
-        .takeUntil(this._debouncedResponseSource)
+        .takeUntil(this._debouncedSource)
         .debounceTime(debounceInMilliseconds)
         .catch(this.handleResponseError)
         .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
@@ -83,20 +108,13 @@ export class MechaHttpService {
           requestNumber: this.getRequestNumber(requester),
           data: this.getResponseJson<T>(response),
         }))
-        .subscribe((response: MechaHttpResponseInterface<T>) => {
-          this._debouncedResponseSource.next(response);
-
-          this._debouncedResponseSource.complete();
-        }, (err: any) => {
-          this._debouncedResponseSource.error(err);
-
-          this._debouncedResponseSource.complete();
-        }, () => this._isDebouncingRequest = false);
+        .finally(() => this._isDebouncingRequest = false)
+        .subscribe(this._debouncedSource);
     }
 
     this._isDebouncingRequest = true;
 
-    return this._debouncedResponseSource;
+    return this._debouncedSource;
   }
 
  /**
@@ -132,27 +150,6 @@ export class MechaHttpService {
   }
 
   /**
-   * Share a single request amongst subscribers
-   * @param {string} url URL to get resource from
-   *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The shared response as an observable
-  */
-  public getShared<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
-    const requester = 'getShared';
-
-    return this._http
-      .get(url)
-      .catch(this.handleResponseError)
-      .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
-        requester: requester,
-        requestNumber: this.getRequestNumber(requester),
-        data: this.getResponseJson<T>(response),
-      }))
-      .share();
-  }
-
-
-  /**
    * Make sure nothing is messing with your response
    * @param {string} url URL to get resource from
    *
@@ -183,17 +180,17 @@ export class MechaHttpService {
   public getCached<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getCached';
 
-    const key: number = this._util.getHashCode(url); // hashing URL and using as key in cache.
+    const key: number = this._util.getHashCode(url); // hashing URL and using as key in cache
 
     const token: string = this._cache.find(key);
 
-    // if initial call or cache is expired, make fetch.
+    // if initial call or cache is expired, make fetch
     if (token == null) {
       this._cache.add(key, ARBITRARY_TOKEN_VALUE);
 
-      // clean up existing subject before re-initializing.
-      if (this._cachedSource) {
-        this._cachedSource.unsubscribe();
+      // clean up existing subject before re-initializing
+      if (this._cachedSource != null) {
+        this._cachedSource.complete();
       }
 
       this._cachedSource = new AsyncSubject();
@@ -206,11 +203,7 @@ export class MechaHttpService {
           requestNumber: this.getRequestNumber(requester),
           data: this.getResponseJson<T>(response),
         }))
-        .subscribe((response: MechaHttpResponseInterface<T>) => {
-          this._cachedSource.next(response);
-
-          this._cachedSource.complete();
-        }, (err: any) => this._cachedSource.error(err));
+        .subscribe(this._cachedSource);
     }
 
     return this._cachedSource;
@@ -229,13 +222,13 @@ export class MechaHttpService {
 
     const token: string = this._cache.find(key);
 
-    // if initial call or cache is expired, make fetch.
+    // if initial call or cache is expired, make fetch
     if (token == null) {
       this._cache.add(key, ARBITRARY_TOKEN_VALUE);
 
-      // clean up existing subject before re-initializing.
-      if (this._cachedImmutableSource) {
-        this._cachedImmutableSource.unsubscribe();
+      // clean up existing subject before re-initializing
+      if (this._cachedImmutableSource != null) {
+        this._cachedImmutableSource.complete();
       }
 
       this._cachedImmutableSource = new AsyncSubject();
@@ -249,11 +242,7 @@ export class MechaHttpService {
             requestNumber: this.getRequestNumber(requester),
             data: this.getResponseJson<T>(response),
           })))
-        .subscribe((result: any) => {
-          this._cachedImmutableSource.next(result);
-
-          this._cachedImmutableSource.complete();
-        }, (err: any) => this._cachedImmutableSource.error(err));
+        .subscribe(this._cachedImmutableSource);
     }
 
     return this._cachedImmutableSource.map((immutable: any) => immutable.toJS());

@@ -10,8 +10,8 @@ export class MechaCacheService implements CacheInterface {
   // using a simple caching library that checks for expiration on retrieval
   private _cache: molar.ILookup;
 
-  constructor(@Inject(APP_CONFIG) readonly appConfig: AppConfigInterface) {
-    this._cache = new molar.Lookup(false, appConfig.cacheTtl);
+  constructor(@Inject(APP_CONFIG) private readonly _appConfig: AppConfigInterface) {
+    this._cache = new molar.Lookup(false, _appConfig.cacheTtl);
   }
 
   /**
@@ -60,5 +60,14 @@ export class MechaCacheService implements CacheInterface {
   */
   public dump(): void {
     this._cache.clear();
+  }
+
+  /**
+   * Get time to live in milliseconds for resources in cache
+   *
+   * @returns {number} Time to live in milliseconds
+   */
+  public getCacheTtl(): number {
+    return this._appConfig.cacheTtl;
   }
 }
