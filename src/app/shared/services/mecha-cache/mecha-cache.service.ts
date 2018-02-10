@@ -16,10 +16,10 @@ export class MechaCacheService implements CacheInterface {
 
   /**
    * Adds a resource to the cache using a key
-   * @param {any} key Key provided to identify the resource in the cache
-   * @param {any} value Value for the resource in the cache
+   * @param key Key provided to identify the resource in the cache
+   * @param value Value for the resource in the cache
    *
-   * @returns {boolean} Flag indicating if resource was successfully added
+   * @returns Flag indicating if resource was successfully added
   */
   public add(key: any, value: any): boolean {
     return this._cache.add(key, value);
@@ -27,9 +27,9 @@ export class MechaCacheService implements CacheInterface {
 
   /**
    * Removes a resource from the cache by key
-   * @param {any} key Key provided to identify the resource in the cache
+   * @param key Key provided to identify the resource in the cache
    *
-   * @returns {boolean} Flag indicating if removal was successful
+   * @returns Flag indicating if removal was successful
   */
   public remove(key: any): boolean {
     return this._cache.remove(key) > 0;
@@ -37,9 +37,9 @@ export class MechaCacheService implements CacheInterface {
 
   /**
    * Finds a resource in the cache by key
-   * @param {any} key Key provided to identify the resource in the cache
+   * @param key Key provided to identify the resource in the cache
    *
-   * @returns {any} The matching resource, if one exists
+   * @returns The matching resource, if one exists
   */
   public find(key: any): any {
     return this._cache.find(key)[0];
@@ -47,9 +47,9 @@ export class MechaCacheService implements CacheInterface {
 
   /**
    * Checks if a resource exists in the cache by key
-   * @param {any} key Key provided to identify the resource in the cache
+   * @param key Key provided to identify the resource in the cache
    *
-   * @returns {boolean} Flag indicating if resource exists in the cache
+   * @returns Flag indicating if resource exists in the cache
   */
   public contains(key: any): boolean {
     return this._cache.contains(key);
@@ -65,7 +65,7 @@ export class MechaCacheService implements CacheInterface {
   /**
    * Get time to live in milliseconds for resources in cache
    *
-   * @returns {number} Time to live in milliseconds
+   * @returns Time to live in milliseconds
    */
   public getCacheTtl(): number {
     return this._appConfig.cacheTtl;

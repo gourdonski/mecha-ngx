@@ -48,9 +48,9 @@ export class MechaHttpService {
 
   /**
    * Vanilla get request
-   * @param {string} url URL to get resource from
+   * @param url URL to get resource from
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The response as an observable
+   * @returns The response as an observable
   */
   public get<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'get';
@@ -67,9 +67,9 @@ export class MechaHttpService {
 
   /**
    * Share a single request amongst subscribers
-   * @param {string} url URL to get resource from
+   * @param url URL to get resource from
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The shared response as an observable
+   * @returns The shared response as an observable
   */
   public getShared<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getShared';
@@ -87,10 +87,10 @@ export class MechaHttpService {
 
   /**
    * Thwart spammers with a debounced get
-   * @param {string} url URL to get resource from
-   * @param {number} [debounceInMilliseconds=1000] Length of time to debounce before submitting request
+   * @param url URL to get resource from
+   * @param [debounceInMilliseconds=1000] Length of time to debounce before submitting request
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The debounced response as an observable
+   * @returns The debounced response as an observable
   */
   public getDebounced<T>(url: string, debounceInMilliseconds: number = 1000): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getDebounced';
@@ -119,12 +119,12 @@ export class MechaHttpService {
 
  /**
    * Get responses until a condition is met, just because
-   * @param {string} url URL to get resource from
-   * @param {Subject<void>} cancelToken Token used to cancel the interval
-   * @param {number} [intervalInMilliseconds=1000] Length of time for each interval
-   * @param {number} [numberOfIntervals] Number of times to execute request
+   * @param url URL to get resource from
+   * @param cancelToken Token used to cancel the interval
+   * @param [intervalInMilliseconds=1000] Length of time for each interval
+   * @param [numberOfIntervals] Number of times to execute request
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The response in intervals as an observable
+   * @returns The response in intervals as an observable
   */
   public getUntil<T>(url: string, cancelToken: Subject<void>, intervalInMilliseconds: number = 1000, numberOfIntervals?: number):
     Observable<MechaHttpResponseInterface<T>> {
@@ -151,9 +151,9 @@ export class MechaHttpService {
 
   /**
    * Make sure nothing is messing with your response
-   * @param {string} url URL to get resource from
+   * @param url URL to get resource from
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The response shared immutably as an observable
+   * @returns The response shared immutably as an observable
   */
   public getImmutable<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getImmutable';
@@ -173,9 +173,9 @@ export class MechaHttpService {
 
   /**
    * Cache a response to save trips to the backend
-   * @param {string} url URL to get resource from
+   * @param url URL to get resource from
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The cached response as an observable
+   * @returns The cached response as an observable
   */
   public getCached<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getCached';
@@ -211,9 +211,9 @@ export class MechaHttpService {
 
   /**
    * Cache a response to save trips to the backend and pass immutable copy to subscribers so they don't mess with each other
-   * @param {string} url URL to get resource from
+   * @param url URL to get resource from
    *
-   * @returns {Observable<MechaHttpResponseInterface<T>>} The cached response shared immutably as an observable
+   * @returns The cached response shared immutably as an observable
   */
   public getCachedImmutable<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
     const requester = 'getCachedImmutable';
