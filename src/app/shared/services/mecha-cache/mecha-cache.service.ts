@@ -21,8 +21,8 @@ export class MechaCacheService implements CacheInterface {
    *
    * @returns Flag indicating if resource was successfully added
   */
-  public add(key: any, value: any): boolean {
-    return this._cache.add(key, value);
+  public add(key: any, value: any, onDestroy?: () => void): boolean {
+    return this._cache.add(key, value, onDestroy);
   }
 
   /**

@@ -24,17 +24,9 @@ import { MechaUtilService } from '../../../shared/services/mecha-util/mecha-util
 
 interface RequestNumberInterface { requestNumber: number; }
 
-const ARBITRARY_TOKEN_VALUE = ' ';
-
 @Injectable()
 export class MechaHttpService {
-  private _requestLookup: { [key: string]: Subject<any>} = {};
-
   private _requesterHistory: { [key: string]: RequestNumberInterface } = {};
-
-  private _cachedSource: AsyncSubject<MechaHttpResponseInterface<any>>;
-
-  private _cachedImmutableSource: AsyncSubject<MechaHttpResponseInterface<any>>;
 
   constructor(
     @Inject(APP_CONFIG) private readonly _appConfig: AppConfigInterface,
@@ -97,11 +89,12 @@ export class MechaHttpService {
       .debounceTime(debounceInMilliseconds)
       .switchMap(() => this._http.get(url))
       .catch(this.handleResponseError)
-        .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
-          requester: requester,
-          requestNumber: this.getRequestNumber(requester),
-          data: this.getResponseJson<T>(response),
-        }));
+      .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
+        requester: requester,
+        requestNumber: this.getRequestNumber(requester),
+        data: this.getResponseJson<T>(response),
+      }))
+      .share();
   }
 
  /**
@@ -121,7 +114,7 @@ export class MechaHttpService {
       .interval(intervalInMilliseconds)
       .takeUntil(cancelToken);
 
-    if (numberOfIntervals) {
+    if (numberOfIntervals != null) {
       getUntil$ = getUntil$.take(numberOfIntervals);
     }
 
@@ -165,35 +158,34 @@ export class MechaHttpService {
    * @returns The cached response as an observable
   */
   public getCached<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
-    const requester = 'getCached';
+    try {
+      const requester = 'getCached';
 
-    const key: number = this._util.getHashCode(url); // hashing URL and using as key in cache
+      const key: number = this._util.getHashCode(url); // hashing URL and using as key in cache
 
-    const token: string = this._cache.find(key);
+      let cachedSource: AsyncSubject<MechaHttpResponseInterface<T>> = this._cache.find(key);
 
-    // if initial call or cache is expired, make fetch
-    if (token == null) {
-      this._cache.add(key, ARBITRARY_TOKEN_VALUE);
+      // if initial call or cache is expired, make fetch
+      if (cachedSource == null) {
+        cachedSource = new AsyncSubject();
 
-      // clean up existing subject before re-initializing
-      if (this._cachedSource != null) {
-        this._cachedSource.complete();
+        this._cache.add(key, cachedSource, () => cachedSource.complete());
+
+        this._http
+          .get(url)
+          .catch(this.handleResponseError)
+          .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
+            requester: requester,
+            requestNumber: this.getRequestNumber(requester),
+            data: this.getResponseJson<T>(response),
+          }))
+          .subscribe(cachedSource);
       }
 
-      this._cachedSource = new AsyncSubject();
-
-      this._http
-        .get(url)
-        .catch(this.handleResponseError)
-        .map((response: HttpResponse<T>) => new MechaHttpResponse<T>({
-          requester: requester,
-          requestNumber: this.getRequestNumber(requester),
-          data: this.getResponseJson<T>(response),
-        }))
-        .subscribe(this._cachedSource);
+      return cachedSource.asObservable();
+    } catch (err) {
+      return Observable.throw(err);
     }
-
-    return this._cachedSource;
   }
 
   /**
@@ -203,36 +195,35 @@ export class MechaHttpService {
    * @returns The cached response shared immutably as an observable
   */
   public getCachedImmutable<T>(url: string): Observable<MechaHttpResponseInterface<T>> {
-    const requester = 'getCachedImmutable';
+    try {
+      const requester = 'getCachedImmutable';
 
-    const key: number = this._util.getHashCode(`immutable${url}`); // hashing URL and using as key in cache
+      const key: number = this._util.getHashCode(`immutable${url}`); // hashing URL and using as key in cache
 
-    const token: string = this._cache.find(key);
+      let cachedImmutableSource: AsyncSubject<MechaHttpResponseInterface<T>> = this._cache.find(key);
 
-    // if initial call or cache is expired, make fetch
-    if (token == null) {
-      this._cache.add(key, ARBITRARY_TOKEN_VALUE);
+      // if initial call or cache is expired, make fetch
+      if (cachedImmutableSource == null) {
+        cachedImmutableSource = new AsyncSubject();
 
-      // clean up existing subject before re-initializing
-      if (this._cachedImmutableSource != null) {
-        this._cachedImmutableSource.complete();
+        this._cache.add(key, cachedImmutableSource, () => cachedImmutableSource.complete());
+
+        this._http
+          .get(url)
+          .catch(this.handleResponseError)
+          .map((response: HttpResponse<T>) => Immutable
+            .fromJS(new MechaHttpResponse<T>({
+              requester: requester,
+              requestNumber: this.getRequestNumber(requester),
+              data: this.getResponseJson<T>(response),
+            })))
+          .subscribe(cachedImmutableSource);
       }
 
-      this._cachedImmutableSource = new AsyncSubject();
-
-      this._http
-        .get(url)
-        .catch(this.handleResponseError)
-        .map((response: HttpResponse<T>) => Immutable
-          .fromJS(new MechaHttpResponse<T>({
-            requester: requester,
-            requestNumber: this.getRequestNumber(requester),
-            data: this.getResponseJson<T>(response),
-          })))
-        .subscribe(this._cachedImmutableSource);
+      return cachedImmutableSource.map((immutable: any) => immutable.toJS());
+    } catch (err) {
+      return Observable.throw(err);
     }
-
-    return this._cachedImmutableSource.map((immutable: any) => immutable.toJS());
   }
 
   private getRequestNumber(requester: string): number {
@@ -241,7 +232,11 @@ export class MechaHttpService {
 
   // the following are based on the Angular Http service doc
   private getResponseJson<T>(response: HttpResponse<T>): T {
-    return response.body;
+    try {
+      return response.body;
+    } catch (err) {
+      return err;
+    }
   }
 
   private handleResponseError(error: any): Observable<string> {
@@ -252,9 +247,12 @@ export class MechaHttpService {
 
       const err = json.error || JSON.stringify(json);
 
-      errorMessage = `${error.status}${error.statusText ? ' ' + error.statusText : ''} - ${err}`;
+      errorMessage = this.formatError(error.status, error.statusText, err);
     } else { errorMessage = error.message ? error.message : error.toString(); }
 
     return Observable.throw(errorMessage);
   }
+
+  private formatError = (errorStatus: number | string, errorStatusText?: string, errorMessage?: string): string =>
+    `${errorStatus}${errorStatusText == null ? '' : ' ' + errorStatusText}${errorMessage == null ? '' : ' - ' + errorMessage}`
 }
