@@ -20,10 +20,7 @@ export declare class MechaHttpService {
     private readonly _cache;
     private readonly _http;
     private readonly _util;
-    private _requestLookup;
     private _requesterHistory;
-    private _cachedSource;
-    private _cachedImmutableSource;
     constructor(_appConfig: AppConfigInterface, _cache: CacheInterface, _http: HttpClient, _util: MechaUtilService);
     /**
      * Vanilla get request
@@ -82,4 +79,5 @@ export declare class MechaHttpService {
     private getRequestNumber(requester);
     private getResponseJson<T>(response);
     private handleResponseError(error);
+    private formatError;
 }

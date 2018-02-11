@@ -48,10 +48,11 @@ var MechaCacheService = /** @class */ (function () {
      * @param {?} key Key provided to identify the resource in the cache
      * @param {?} value Value for the resource in the cache
      *
+     * @param {?=} onDestroy
      * @return {?} Flag indicating if resource was successfully added
      */
-    MechaCacheService.prototype.add = function (key, value) {
-        return this._cache.add(key, value);
+    MechaCacheService.prototype.add = function (key, value, onDestroy) {
+        return this._cache.add(key, value, onDestroy);
     };
     /**
      * Removes a resource from the cache by key
@@ -166,7 +167,6 @@ MechaUtilService.ctorParameters = function () { return []; };
  * @fileoverview added by tsickle
  * @suppress {checkTypes} checked by tsc
  */
-var ARBITRARY_TOKEN_VALUE = ' ';
 var MechaHttpService = /** @class */ (function () {
     /**
      * @param {?} _appConfig
@@ -179,8 +179,8 @@ var MechaHttpService = /** @class */ (function () {
         this._cache = _cache;
         this._http = _http;
         this._util = _util;
-        this._requestLookup = {};
         this._requesterHistory = {};
+        this.formatError = function (errorStatus, errorStatusText, errorMessage) { return "" + errorStatus + (errorStatusText == null ? '' : ' ' + errorStatusText) + (errorMessage == null ? '' : ' - ' + errorMessage); };
     }
     /**
      * Vanilla get request
@@ -241,7 +241,8 @@ var MechaHttpService = /** @class */ (function () {
             requester: requester,
             requestNumber: _this.getRequestNumber(requester),
             data: _this.getResponseJson(response),
-        }); });
+        }); })
+            .share();
     };
     /**
      * Get responses until a condition is met, just because
@@ -259,7 +260,7 @@ var MechaHttpService = /** @class */ (function () {
         var /** @type {?} */ getUntil$ = Observable
             .interval(intervalInMilliseconds)
             .takeUntil(cancelToken);
-        if (numberOfIntervals) {
+        if (numberOfIntervals != null) {
             getUntil$ = getUntil$.take(numberOfIntervals);
         }
         return getUntil$
@@ -302,28 +303,29 @@ var MechaHttpService = /** @class */ (function () {
      */
     MechaHttpService.prototype.getCached = function (url) {
         var _this = this;
-        var /** @type {?} */ requester = 'getCached';
-        var /** @type {?} */ key = this._util.getHashCode(url); // hashing URL and using as key in cache
-        var /** @type {?} */ token = this._cache.find(key);
-        // if initial call or cache is expired, make fetch
-        if (token == null) {
-            this._cache.add(key, ARBITRARY_TOKEN_VALUE);
-            // clean up existing subject before re-initializing
-            if (this._cachedSource != null) {
-                this._cachedSource.complete();
+        try {
+            var /** @type {?} */ requester_1 = 'getCached';
+            var /** @type {?} */ key = this._util.getHashCode(url); // hashing URL and using as key in cache
+            var /** @type {?} */ cachedSource_1 = this._cache.find(key);
+            // if initial call or cache is expired, make fetch
+            if (cachedSource_1 == null) {
+                cachedSource_1 = new AsyncSubject();
+                this._cache.add(key, cachedSource_1, function () { return cachedSource_1.complete(); });
+                this._http
+                    .get(url)
+                    .catch(this.handleResponseError)
+                    .map(function (response) { return new MechaHttpResponse({
+                    requester: requester_1,
+                    requestNumber: _this.getRequestNumber(requester_1),
+                    data: _this.getResponseJson(response),
+                }); })
+                    .subscribe(cachedSource_1);
             }
-            this._cachedSource = new AsyncSubject();
-            this._http
-                .get(url)
-                .catch(this.handleResponseError)
-                .map(function (response) { return new MechaHttpResponse({
-                requester: requester,
-                requestNumber: _this.getRequestNumber(requester),
-                data: _this.getResponseJson(response),
-            }); })
-                .subscribe(this._cachedSource);
+            return cachedSource_1.asObservable();
         }
-        return this._cachedSource;
+        catch (err) {
+            return Observable.throw(err);
+        }
     };
     /**
      * Cache a response to save trips to the backend and pass immutable copy to subscribers so they don't mess with each other
@@ -334,28 +336,29 @@ var MechaHttpService = /** @class */ (function () {
      */
     MechaHttpService.prototype.getCachedImmutable = function (url) {
         var _this = this;
-        var /** @type {?} */ requester = 'getCachedImmutable';
-        var /** @type {?} */ key = this._util.getHashCode("immutable" + url); // hashing URL and using as key in cache
-        var /** @type {?} */ token = this._cache.find(key);
-        // if initial call or cache is expired, make fetch
-        if (token == null) {
-            this._cache.add(key, ARBITRARY_TOKEN_VALUE);
-            // clean up existing subject before re-initializing
-            if (this._cachedImmutableSource != null) {
-                this._cachedImmutableSource.complete();
+        try {
+            var /** @type {?} */ requester_2 = 'getCachedImmutable';
+            var /** @type {?} */ key = this._util.getHashCode("immutable" + url); // hashing URL and using as key in cache
+            var /** @type {?} */ cachedImmutableSource_1 = this._cache.find(key);
+            // if initial call or cache is expired, make fetch
+            if (cachedImmutableSource_1 == null) {
+                cachedImmutableSource_1 = new AsyncSubject();
+                this._cache.add(key, cachedImmutableSource_1, function () { return cachedImmutableSource_1.complete(); });
+                this._http
+                    .get(url)
+                    .catch(this.handleResponseError)
+                    .map(function (response) { return fromJS(new MechaHttpResponse({
+                    requester: requester_2,
+                    requestNumber: _this.getRequestNumber(requester_2),
+                    data: _this.getResponseJson(response),
+                })); })
+                    .subscribe(cachedImmutableSource_1);
             }
-            this._cachedImmutableSource = new AsyncSubject();
-            this._http
-                .get(url)
-                .catch(this.handleResponseError)
-                .map(function (response) { return fromJS(new MechaHttpResponse({
-                requester: requester,
-                requestNumber: _this.getRequestNumber(requester),
-                data: _this.getResponseJson(response),
-            })); })
-                .subscribe(this._cachedImmutableSource);
+            return cachedImmutableSource_1.map(function (immutable) { return immutable.toJS(); });
         }
-        return this._cachedImmutableSource.map(function (immutable) { return immutable.toJS(); });
+        catch (err) {
+            return Observable.throw(err);
+        }
     };
     /**
      * @param {?} requester
@@ -370,7 +373,12 @@ var MechaHttpService = /** @class */ (function () {
      * @return {?}
      */
     MechaHttpService.prototype.getResponseJson = function (response) {
-        return response.body;
+        try {
+            return response.body;
+        }
+        catch (err) {
+            return err;
+        }
     };
     /**
      * @param {?} error
@@ -381,7 +389,7 @@ var MechaHttpService = /** @class */ (function () {
         if (error instanceof HttpResponse) {
             var /** @type {?} */ json = error.body;
             var /** @type {?} */ err = json.error || JSON.stringify(json);
-            errorMessage = "" + error.status + (error.statusText ? ' ' + error.statusText : '') + " - " + err;
+            errorMessage = this.formatError(error.status, error.statusText, err);
         }
         else {
             errorMessage = error.message ? error.message : error.toString();

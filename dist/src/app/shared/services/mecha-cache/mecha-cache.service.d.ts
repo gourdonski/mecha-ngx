@@ -11,7 +11,7 @@ export declare class MechaCacheService implements CacheInterface {
      *
      * @returns Flag indicating if resource was successfully added
     */
-    add(key: any, value: any): boolean;
+    add(key: any, value: any, onDestroy?: () => void): boolean;
     /**
      * Removes a resource from the cache by key
      * @param key Key provided to identify the resource in the cache
