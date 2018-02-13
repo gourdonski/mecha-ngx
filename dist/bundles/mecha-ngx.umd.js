@@ -415,12 +415,12 @@ var MechaModule = /** @class */ (function () {
      * @return {?}
      */
     MechaModule.forRoot = function (_a) {
-        var _b = _a.appConfig, appConfig = _b === void 0 ? defaultConfig : _b, _c = _a.cacheClass, cacheClass = _c === void 0 ? MechaCacheService : _c;
+        var appConfig = _a.appConfig, cacheClass = _a.cacheClass;
         return {
             ngModule: MechaModule,
             providers: [
-                { provide: APP_CONFIG, useValue: appConfig },
-                { provide: CACHE, useClass: cacheClass },
+                { provide: APP_CONFIG, useValue: appConfig || defaultConfig },
+                { provide: CACHE, useClass: cacheClass || MechaCacheService },
             ]
         };
     };
@@ -433,6 +433,7 @@ MechaModule.decorators = [
                     http.HttpClientModule,
                 ],
                 providers: [
+                    MechaCacheService,
                     MechaHttpService,
                     MechaUtilService,
                 ],
@@ -443,9 +444,10 @@ MechaModule.ctorParameters = function () { return []; };
 
 exports.MechaModule = MechaModule;
 exports.ɵc = APP_CONFIG;
-exports.ɵe = CACHE;
-exports.ɵa = MechaHttpService;
-exports.ɵf = MechaUtilService;
+exports.ɵf = CACHE;
+exports.ɵd = MechaHttpService;
+exports.ɵa = MechaCacheService;
+exports.ɵg = MechaUtilService;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
