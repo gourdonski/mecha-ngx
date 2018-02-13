@@ -23,20 +23,21 @@ export interface MechaModuleOptionsInterface {
     HttpClientModule,
   ],
   providers: [
+    MechaCacheService,
     MechaHttpService,
     MechaUtilService,
   ],
 })
 export class MechaModule {
   static forRoot({
-      appConfig = defaultConfig,
-      cacheClass = MechaCacheService,
+      appConfig,
+      cacheClass,
     }: MechaModuleOptionsInterface): ModuleWithProviders {
     return {
       ngModule: MechaModule,
       providers: [
-        { provide: APP_CONFIG, useValue: appConfig },
-        { provide: CACHE, useClass: cacheClass },
+        { provide: APP_CONFIG, useValue: appConfig || defaultConfig },
+        { provide: CACHE, useClass: cacheClass || MechaCacheService },
       ]
     };
   }

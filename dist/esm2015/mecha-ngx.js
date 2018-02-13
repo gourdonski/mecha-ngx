@@ -417,12 +417,12 @@ class MechaModule {
      * @param {?} __0
      * @return {?}
      */
-    static forRoot({ appConfig = defaultConfig, cacheClass = MechaCacheService, }) {
+    static forRoot({ appConfig, cacheClass, }) {
         return {
             ngModule: MechaModule,
             providers: [
-                { provide: APP_CONFIG, useValue: appConfig },
-                { provide: CACHE, useClass: cacheClass },
+                { provide: APP_CONFIG, useValue: appConfig || defaultConfig },
+                { provide: CACHE, useClass: cacheClass || MechaCacheService },
             ]
         };
     }
@@ -434,6 +434,7 @@ MechaModule.decorators = [
                     HttpClientModule,
                 ],
                 providers: [
+                    MechaCacheService,
                     MechaHttpService,
                     MechaUtilService,
                 ],
@@ -455,5 +456,5 @@ MechaModule.ctorParameters = () => [];
  * Generated bundle index. Do not edit.
  */
 
-export { MechaModule, APP_CONFIG as ɵc, CACHE as ɵe, MechaHttpService as ɵa, MechaUtilService as ɵf };
+export { MechaModule, APP_CONFIG as ɵc, CACHE as ɵf, MechaHttpService as ɵd, MechaCacheService as ɵa, MechaUtilService as ɵg };
 //# sourceMappingURL=mecha-ngx.js.map
